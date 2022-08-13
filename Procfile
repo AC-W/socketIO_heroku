@@ -1,1 +1,1 @@
-web: gunicorn --worker-class eventlet -w 1 app:app
+web: gunicorn -w 4 -k uvicorn.workers.UvicornWorker app:app
