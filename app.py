@@ -280,7 +280,5 @@ def check_move(client,data):
 if __name__ == '__main__':
     import eventlet
     import eventlet.wsgi
-    requests_log = logging.getLogger("socketio")
-    requests_log.setLevel(logging.ERROR)
     eventlet.wsgi.server(eventlet.listen(('', 8000)), app)
 # Local (windows) machine debug: <--
