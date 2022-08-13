@@ -1,9 +1,18 @@
 import socketio
 import chess
 from database import DataBase as db
+import eventlet
+import eventlet.wsgi
+import logging
 
-sio = socketio.Server(cors_allowed_origins='*')
+
+sio = socketio.Server(async_mode='eventlet',cors_allowed_origins='*')
+sio = socketio.Server()
 app = socketio.WSGIApp(sio)
+
+requests_log = logging.getLogger("socketio")
+requests_log.setLevel(logging.ERROR)
+eventlet.wsgi.server(eventlet.listen(('', 8000)), app,log=requests_log)
 
 myDataBase = db()
 
@@ -272,10 +281,11 @@ def check_move(client,data):
         print("invalid move")
 
 # Local (windows) machine debug: -->
-# import eventlet
-# import eventlet.wsgi
-# import logging
-# requests_log = logging.getLogger("socketio")
-# requests_log.setLevel(logging.ERROR)
-# eventlet.wsgi.server(eventlet.listen(('', 8000)), app,log=requests_log)
+if __name__ == '__main__':
+    import eventlet
+    import eventlet.wsgi
+    import logging
+    requests_log = logging.getLogger("socketio")
+    requests_log.setLevel(logging.ERROR)
+    eventlet.wsgi.server(eventlet.listen(('', 8000)), app,log=requests_log)
 # Local (windows) machine debug: <--
