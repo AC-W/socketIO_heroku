@@ -1,14 +1,9 @@
 import socketio
 import chess
 from database import DataBase as db
-import eventlet
-import eventlet.wsgi
 
-sio = socketio.Server(async_mode='eventlet',cors_allowed_origins='*')
-sio = socketio.Server()
-app = socketio.WSGIApp(sio)
-
-eventlet.wsgi.server(eventlet.listen(('', 8000)), app)
+sio = socketio.AsyncServer(async_mode='asgi',cors_allowed_origins='*')
+app = socketio.ASGIApp(sio)
 
 myDataBase = db()
 
@@ -76,7 +71,7 @@ def quitRoom(client):
 
 # Server Connection/Disconnection
 @sio.event
-def connect(client,environ):
+async def connect(client,environ):
     global client_count
     client_count += 1
     print(client,'connected')
@@ -89,7 +84,7 @@ def connect(client,environ):
     sio.emit('new client',{'client_ID':client},to=client)
 
 @sio.event
-def disconnect(client):
+async def disconnect(client):
     global client_count
     client_count -= 1
     print(client,'disconnected')
@@ -106,11 +101,11 @@ def disconnect(client):
         print(users)
 
 @sio.event
-def get_server_status(client):
+async def get_server_status(client):
     sio.emit('server_status',{'client_count':client_count},to=client)
 
 @sio.event
-def server_reset():
+async def server_reset():
     global client_count
     users.clear()
     games.clear()
@@ -118,7 +113,7 @@ def server_reset():
 
 # User login:
 @sio.event
-def login(client,data):
+async def login(client,data):
     user_ID = data['user_ID']
     password = data['password']
     user_info = myDataBase.retrive_user_Info(user_ID,password)
@@ -140,7 +135,7 @@ def login(client,data):
 
 # User log off:
 @sio.event
-def log_off(client):
+async def log_off(client):
     if client in users:
         print("logging_off")
         print(client)
@@ -153,7 +148,7 @@ def log_off(client):
 
 # Account Creation:
 @sio.event
-def create_account(client,data):
+async def create_account(client,data):
     if myDataBase.check_user_exists('Users',data['new_user_ID']):
         sio.emit('error',{'msg':'User already exists'},to=client)
     else:
@@ -164,7 +159,7 @@ def create_account(client,data):
 
 # Joinning Rooms:
 @sio.event
-def join_game(client,data):
+async def join_game(client,data):
     gameID = data['game_ID']
     join_as = data['join_as']
     if client not in users:
@@ -241,7 +236,7 @@ def join_game(client,data):
 
 # Room chat:
 @sio.event
-def new_message(client,data):
+async def new_message(client,data):
     gameID = data['game_ID']
     message = data['message']
     username = users[client]['username']
@@ -251,7 +246,7 @@ def new_message(client,data):
 
 # Moves on board:
 @sio.event
-def check_move_piece(client,data):
+async def check_move_piece(client,data):
     gameID = data['game_ID']
     uci = data['uci']
     array = list(games[gameID]['game'].legal_moves)
@@ -263,7 +258,7 @@ def check_move_piece(client,data):
     sio.emit('update_move_check',{'validmove':validmove},to=client)
 
 @sio.event
-def check_move(client,data):
+async def check_move(client,data):
     gameID = data['game_ID']
     uci = data['uci']
     game_array = fen_to_array(games[gameID]['game'].fen())
@@ -277,8 +272,10 @@ def check_move(client,data):
         print("invalid move")
 
 # Local (windows) machine debug: -->
-# if __name__ == '__main__':
-#     import eventlet
-#     import eventlet.wsgi
-#     eventlet.wsgi.server(eventlet.listen(('', 8000)), app)
+# import eventlet
+# import eventlet.wsgi
+# import logging
+# requests_log = logging.getLogger("socketio")
+# requests_log.setLevel(logging.ERROR)
+# eventlet.wsgi.server(eventlet.listen(('', 8000)), app,log=requests_log)
 # Local (windows) machine debug: <--
