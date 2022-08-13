@@ -1,3 +1,4 @@
 gunicorn
 python-socketio
 chess==1.9.2
+mysql-connector-python
