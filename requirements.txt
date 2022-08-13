@@ -2,6 +2,6 @@ gunicorn
 python-socketio
 chess==1.9.2
 mysql-connector-python
-uvicorn
 flask
+gevent-websocket
 eventlet
