@@ -3,7 +3,7 @@ import chess
 from database import DataBase as db
 from flask import Flask
 
-sio = socketio.Server(cors_allowed_origins='*',async_mode='eventlet')
+sio = socketio.Server(cors_allowed_origins='*',async_mode='threading')
 app = Flask(__name__)
 app.wsgi_app = socketio.WSGIApp(sio, app.wsgi_app)
 
