@@ -273,11 +273,11 @@ def check_move(client,data):
         print("invalid move")
 
 # Local (windows) machine debug: -->
-import eventlet
-import eventlet.wsgi
+# import eventlet
+# import eventlet.wsgi
 # import logging
 # requests_log = logging.getLogger("socketio")
 # requests_log.setLevel(logging.ERROR)
-port = int(os.environ.get("PORT", 5000))
-eventlet.wsgi.server(eventlet.listen(('', port)), app)
+# port = int(os.environ.get("PORT", 5000))
+# eventlet.wsgi.server(eventlet.listen(('', port)), app)
 # Local (windows) machine debug: <--
