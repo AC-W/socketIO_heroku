@@ -1,1 +1,1 @@
-web: gunicorn --threads 1 app:app
+web: uvicorn app:app
