@@ -2,8 +2,8 @@ import socketio
 import chess
 from database import DataBase as db
 
-sio = socketio.AsyncServer(async_mode='asgi',cors_allowed_origins='*')
-app = socketio.ASGIApp(sio)
+sio = socketio.Server(cors_allowed_origins='*')
+app = socketio.WSGIApp(sio)
 
 myDataBase = db()
 
@@ -71,7 +71,7 @@ def quitRoom(client):
 
 # Server Connection/Disconnection
 @sio.event
-async def connect(client,environ):
+def connect(client,environ):
     global client_count
     client_count += 1
     print(client,'connected')
@@ -84,7 +84,7 @@ async def connect(client,environ):
     sio.emit('new client',{'client_ID':client},to=client)
 
 @sio.event
-async def disconnect(client):
+def disconnect(client):
     global client_count
     client_count -= 1
     print(client,'disconnected')
@@ -101,11 +101,11 @@ async def disconnect(client):
         print(users)
 
 @sio.event
-async def get_server_status(client):
+def get_server_status(client):
     sio.emit('server_status',{'client_count':client_count},to=client)
 
 @sio.event
-async def server_reset():
+def server_reset():
     global client_count
     users.clear()
     games.clear()
@@ -113,7 +113,7 @@ async def server_reset():
 
 # User login:
 @sio.event
-async def login(client,data):
+def login(client,data):
     user_ID = data['user_ID']
     password = data['password']
     user_info = myDataBase.retrive_user_Info(user_ID,password)
@@ -135,7 +135,7 @@ async def login(client,data):
 
 # User log off:
 @sio.event
-async def log_off(client):
+def log_off(client):
     if client in users:
         print("logging_off")
         print(client)
@@ -148,7 +148,7 @@ async def log_off(client):
 
 # Account Creation:
 @sio.event
-async def create_account(client,data):
+def create_account(client,data):
     if myDataBase.check_user_exists('Users',data['new_user_ID']):
         sio.emit('error',{'msg':'User already exists'},to=client)
     else:
@@ -159,7 +159,7 @@ async def create_account(client,data):
 
 # Joinning Rooms:
 @sio.event
-async def join_game(client,data):
+def join_game(client,data):
     gameID = data['game_ID']
     join_as = data['join_as']
     if client not in users:
@@ -236,7 +236,7 @@ async def join_game(client,data):
 
 # Room chat:
 @sio.event
-async def new_message(client,data):
+def new_message(client,data):
     gameID = data['game_ID']
     message = data['message']
     username = users[client]['username']
@@ -246,7 +246,7 @@ async def new_message(client,data):
 
 # Moves on board:
 @sio.event
-async def check_move_piece(client,data):
+def check_move_piece(client,data):
     gameID = data['game_ID']
     uci = data['uci']
     array = list(games[gameID]['game'].legal_moves)
@@ -258,7 +258,7 @@ async def check_move_piece(client,data):
     sio.emit('update_move_check',{'validmove':validmove},to=client)
 
 @sio.event
-async def check_move(client,data):
+def check_move(client,data):
     gameID = data['game_ID']
     uci = data['uci']
     game_array = fen_to_array(games[gameID]['game'].fen())
