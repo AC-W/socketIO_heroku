@@ -1,10 +1,11 @@
 import socketio
 import chess
 from database import DataBase as db
-import os
+from flask import Flask
 
-sio = socketio.Server(cors_allowed_origins='*')
-app = socketio.WSGIApp(sio)
+sio = socketio.Server(cors_allowed_origins='*',async_mode='threading')
+app = Flask(__name__)
+app.wsgi_app = socketio.WSGIApp(sio, app.wsgi_app)
 
 myDataBase = db()
 
@@ -69,6 +70,10 @@ def quitRoom(client):
         if len(games[users[client]['game']]['users']) == 0:
             games.pop(users[client]['game'])
         users[client].pop('game')
+
+@app.route("/")
+def hello():
+    return 'hello'
 
 # Server Connection/Disconnection
 @sio.event
@@ -272,6 +277,8 @@ def check_move(client,data):
         sio.emit('error',{'msg':'invalid move'},to=client)
         print("invalid move")
 
+if __name__ == '__main__':
+    app.run()
 # Local (windows) machine debug: -->
 # import eventlet
 # import eventlet.wsgi
