@@ -1,6 +1,7 @@
 import socketio
 import chess
 from database import DataBase as db
+import os
 
 sio = socketio.Server(cors_allowed_origins='*')
 app = socketio.WSGIApp(sio)
@@ -277,5 +278,6 @@ import eventlet.wsgi
 # import logging
 # requests_log = logging.getLogger("socketio")
 # requests_log.setLevel(logging.ERROR)
-eventlet.wsgi.server(eventlet.listen(('', process.env.PORT or 8000)), app)
+port = int(os.environ.get("PORT", 5000))
+eventlet.wsgi.server(eventlet.listen(('', port)), app)
 # Local (windows) machine debug: <--
