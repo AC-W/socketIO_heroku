@@ -1,5 +1,5 @@
 // const socket = io("https://socketioserveracw.herokuapp.com");
-const socket = io("http://127.0.0.1:8000");
+const socket = io("http://127.0.0.1:5000");
 
 socket.on('connect', () => {
     console.log('connected')
