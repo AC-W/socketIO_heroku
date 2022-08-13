@@ -277,8 +277,8 @@ def check_move(client,data):
         print("invalid move")
 
 # Local (windows) machine debug: -->
-if __name__ == '__main__':
-    import eventlet
-    import eventlet.wsgi
-    eventlet.wsgi.server(eventlet.listen(('', 8000)), app)
+# if __name__ == '__main__':
+#     import eventlet
+#     import eventlet.wsgi
+#     eventlet.wsgi.server(eventlet.listen(('', 8000)), app)
 # Local (windows) machine debug: <--
