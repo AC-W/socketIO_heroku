@@ -1,11 +1,14 @@
 import socketio
 import chess
 from database import DataBase as db
-from flask import Flask
+import os
+ON_HEROKU = os.environ.get('ON_HEROKU')
+port = 3000
+if ON_HEROKU:
+    port = int(os.environ.get('PORT', 17995))
 
 sio = socketio.Server(cors_allowed_origins='*')
-app = Flask(__name__)
-app.wsgi_app = socketio.WSGIApp(sio, app.wsgi_app)
+app = socketio.WSGIApp(sio)
 
 myDataBase = db()
 
@@ -70,10 +73,6 @@ def quitRoom(client):
         if len(games[users[client]['game']]['users']) == 0:
             games.pop(users[client]['game'])
         users[client].pop('game')
-
-@app.route("/")
-def hello():
-    return 'hello'
 
 # Server Connection/Disconnection
 @sio.event
@@ -277,14 +276,11 @@ def check_move(client,data):
         sio.emit('error',{'msg':'invalid move'},to=client)
         print("invalid move")
 
-if __name__ == '__main__':
-    app.run()
 # Local (windows) machine debug: -->
-# import eventlet
-# import eventlet.wsgi
-# import logging
-# requests_log = logging.getLogger("socketio")
-# requests_log.setLevel(logging.ERROR)
-# port = int(os.environ.get("PORT", 5000))
-# eventlet.wsgi.server(eventlet.listen(('', port)), app)
+import eventlet
+import eventlet.wsgi
+import logging
+requests_log = logging.getLogger("socketio")
+requests_log.setLevel(logging.ERROR)
+eventlet.wsgi.server(eventlet.listen(('', 8000)), app,log=requests_log)
 # Local (windows) machine debug: <--
