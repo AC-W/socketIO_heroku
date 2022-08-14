@@ -147,15 +147,16 @@ def login(client,data):
 
 # User log off:
 @sio.event
-def log_off(client):
+def quit_game(client):
     global games
     global users
     if client in users:
-        print("logging_off")
-        print(client)
-        quitRoom(client)
-        users.pop(client)
-        sio.emit('success',{'msg':'Logged out'},to=client)
+        if 'game' in users[client]:
+            quitRoom(client)
+            sio.emit('success',{'msg':'Left game room'},to=client)
+        game_array = fen_to_array(game)
+        sio.emit('update_board',{'game_array':game_array},to=client)
+        sio.emit('update_chat',{'chat': 'You are in a empty room'},to=client)
     else:
         sio.emit('error',{'msg':'failure to log out'},to=client)
         print("logging_off error (userId not found)")
@@ -290,6 +291,17 @@ def check_move(client,data):
         games[gameID]['game'].push_uci(uci)
         print(games[gameID]['game'])
         game_array = fen_to_array(games[gameID]['game'].fen())
+        
+        outcome = games[gameID]['game'].outcome().outcome()
+        if outcome:
+            if outcome.winner == chess.WHITE:
+                games[gameID]['chat'] += f'Server:\nwhite won\n\n'
+            elif outcome.winner == chess.BLACK:
+                games[gameID]['chat'] += f'Server:\nblack won\n\n'
+            else:
+                games[gameID]['chat'] += f'Server:\ndraw\n\n'
+            chat = games[gameID]['chat']
+            sio.emit('update_chat',{'chat': chat},to=gameID)
         sio.emit('update_board',{'game_array':game_array},to=gameID)
     else:
         sio.emit('error',{'msg':'invalid move'},to=client)

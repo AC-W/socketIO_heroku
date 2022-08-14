@@ -1,4 +1,4 @@
-const socket = io("https://socketioserveracw.herokuapp.com:8000");
+const socket = io("https://socketioserveracw.herokuapp.com");
 // const socket = io("http://127.0.0.1:8000");
 
 
