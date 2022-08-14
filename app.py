@@ -292,7 +292,7 @@ def check_move(client,data):
         print(games[gameID]['game'])
         game_array = fen_to_array(games[gameID]['game'].fen())
         
-        outcome = games[gameID]['game'].outcome().outcome()
+        outcome = games[gameID]['game'].outcome()
         if outcome:
             if outcome.winner == chess.WHITE:
                 games[gameID]['chat'] += f'Server:\nwhite won\n\n'
