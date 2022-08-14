@@ -289,10 +289,11 @@ def check_move(client,data):
     game_array = fen_to_array(games[gameID]['game'].fen())
     if chess.Move.from_uci(uci) in games[gameID]['game'].legal_moves:
         games[gameID]['game'].push_uci(uci)
-        print(games[gameID]['game'])
         game_array = fen_to_array(games[gameID]['game'].fen())
         
         outcome = games[gameID]['game'].outcome()
+        print(outcome)
+        
         if outcome:
             if outcome.winner == chess.WHITE:
                 games[gameID]['chat'] += f'Server:\nwhite won\n\n'
