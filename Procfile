@@ -1,1 +1,1 @@
-web: gunicorn --worker-class eventlet -w 1 app:app --bind="127.0.0.1:5000"
+web: gunicorn -w 1 app:app --bind="127.0.0.1:5000"
