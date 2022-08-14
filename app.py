@@ -72,6 +72,8 @@ def quitRoom(client):
 @sio.event
 def connect(client,environ):
     global client_count
+    global games
+    global users
     client_count += 1
     print(client,'connected')
     new_user = {client:
@@ -85,6 +87,8 @@ def connect(client,environ):
 @sio.event
 def disconnect(client):
     global client_count
+    global games
+    global users
     client_count -= 1
     print(client,'disconnected')
     if client in users:
@@ -101,10 +105,14 @@ def disconnect(client):
 
 @sio.event
 def get_server_status(client):
+    global games
+    global users
     sio.emit('server_status',{'client_count':client_count},to=client)
 
 @sio.event
 def server_reset():
+    global games
+    global users
     global client_count
     users.clear()
     games.clear()
@@ -113,6 +121,8 @@ def server_reset():
 # User login:
 @sio.event
 def login(client,data):
+    global games
+    global users
     user_ID = data['user_ID']
     password = data['password']
     user_info = myDataBase.retrive_user_Info(user_ID,password)
@@ -135,6 +145,8 @@ def login(client,data):
 # User log off:
 @sio.event
 def log_off(client):
+    global games
+    global users
     if client in users:
         print("logging_off")
         print(client)
@@ -148,6 +160,8 @@ def log_off(client):
 # Account Creation:
 @sio.event
 def create_account(client,data):
+    global games
+    global users
     if myDataBase.check_user_exists('Users',data['new_user_ID']):
         sio.emit('error',{'msg':'User already exists'},to=client)
     else:
@@ -159,6 +173,8 @@ def create_account(client,data):
 # Joinning Rooms:
 @sio.event
 def join_game(client,data):
+    global games
+    global users
     gameID = data['game_ID']
     join_as = data['join_as']
     if client not in users:
@@ -236,6 +252,8 @@ def join_game(client,data):
 # Room chat:
 @sio.event
 def new_message(client,data):
+    global games
+    global users
     gameID = data['game_ID']
     message = data['message']
     username = users[client]['username']
@@ -246,6 +264,8 @@ def new_message(client,data):
 # Moves on board:
 @sio.event
 def check_move_piece(client,data):
+    global games
+    global users
     gameID = data['game_ID']
     uci = data['uci']
     array = list(games[gameID]['game'].legal_moves)
@@ -258,6 +278,8 @@ def check_move_piece(client,data):
 
 @sio.event
 def check_move(client,data):
+    global games
+    global users
     gameID = data['game_ID']
     uci = data['uci']
     game_array = fen_to_array(games[gameID]['game'].fen())
@@ -271,10 +293,10 @@ def check_move(client,data):
         print("invalid move")
 
 # Local (windows) machine debug: -->
-# import eventlet
-# import eventlet.wsgi
-# import logging
-# requests_log = logging.getLogger("socketio")
-# requests_log.setLevel(logging.ERROR)
-# eventlet.wsgi.server(eventlet.listen(('', 5000)), app,log=requests_log)
+import eventlet
+import eventlet.wsgi
+import logging
+requests_log = logging.getLogger("socketio")
+requests_log.setLevel(logging.ERROR)
+eventlet.wsgi.server(eventlet.listen(('', 8000)), app,log=requests_log)
 # Local (windows) machine debug: <--
