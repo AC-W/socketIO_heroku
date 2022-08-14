@@ -5,10 +5,9 @@ import os
 sio = socketio.Server(cors_allowed_origins='*')
 app = socketio.WSGIApp(sio)
 
+print(int(os.environ.get("PORT", 17995)))
 
 myDataBase = db()
-
-print(process.env.PORT)
 
 # each entry in games:
 # {gameID(string):
