@@ -2,13 +2,18 @@ import mysql.connector
 
 class DataBase():
     def __init__(self):
-        self.mydb = mysql.connector.connect(
-            host="sql3.freesqldatabase.com",
-            user="sql3512526",
-            password="rSDMzrZLp1",
-            database="sql3512526",
-            )
-        self.cursor = self.mydb.cursor()
+        try:
+            self.mydb = mysql.connector.connect(
+                host="sql3.freesqldatabase.com",
+                user="sql3512526",
+                password="rSDMzrZLp1",
+                database="sql3512526",
+                )
+            self.cursor = self.mydb.cursor()
+        except:
+            self.mydb = None
+            self.cursor = None
+            print('sql_database expired')
 
     def add_column(self,table_name,column_name,data_type):
         update_table = (f"ALTER TABLE {table_name} ADD {column_name} {data_type}")
