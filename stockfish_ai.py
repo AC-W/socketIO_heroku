@@ -4,7 +4,7 @@ import chess.engine
 
 class StockFish_AI:
     def __init__(self):
-        self.engine = chess.engine.SimpleEngine.popen_uci("stockfish_15_x64_avx2.exe")
+        self.engine = chess.engine.SimpleEngine.popen_uci("stockfish_15_x64")
 
     def make_move(self,board):
         info = self.engine.analyse(board, chess.engine.Limit(time=0.1))
