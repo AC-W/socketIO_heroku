@@ -1,6 +1,7 @@
 import socketio
 import chess
 from database import DataBase as db
+from stockfish_ai import StockFish_AI as sf
 import os
 sio = socketio.Server(cors_allowed_origins='*')
 app = socketio.WSGIApp(sio)
@@ -174,6 +175,30 @@ def create_account(client,data):
         sio.emit('account_creation_success',to=client)
         sio.emit('success',{'msg':'Account created'},to=client)
 
+@sio.event
+def add_stockfish_ai(client,data):
+    global games
+    global users
+    gameID = data['game_ID']
+    join_as = data['join_as']
+    ai = 'black_player_ID'
+    if join_as == 'black':
+        ai = 'white_player_ID'
+    if gameID not in games:
+        sio.emit('error',{'msg':'not in an active game'},to=client)
+    elif games[gameID][ai] == 'ai':
+        sio.emit('error',{'msg':'already playing against ai'},to=client)
+    elif games[gameID][ai] != 'nothing':
+        sio.emit('error',{'msg':'already playing against another player'},to=client)
+    else:
+        games[gameID][ai] = 'ai'
+        games[gameID]['ai'] = sf()
+        if (ai == 'white_player_ID' and games[gameID]['game'].turn) or (ai == 'black_player_ID' and not games[gameID]['game'].turn):
+            uci = games[gameID]['ai'].make_move(games[gameID]['game'])
+            games[gameID]['game'].push(uci)
+            game_array = fen_to_array(games[gameID]['game'].fen())
+            sio.emit('update_board',{'game_array':game_array},to=gameID)
+
 # Joinning Rooms:
 @sio.event
 def join_game(client,data):
@@ -204,6 +229,7 @@ def join_game(client,data):
                 'white_player_ID':'nothing',
                 'black_player_ID':'nothing',
                 'numberofusers': 0,
+                'ai':'nothing',
                 'chat':"",
             }
         }
@@ -292,8 +318,14 @@ def check_move(client,data):
         game_array = fen_to_array(games[gameID]['game'].fen())
         
         outcome = games[gameID]['game'].outcome()
+        sio.emit('update_board',{'game_array':game_array},to=gameID)
+        if games[gameID]['ai'] != 'nothing' and not outcome:
+            uci = games[gameID]['ai'].make_move(games[gameID]['game'])
+            games[gameID]['game'].push(uci)
+            game_array = fen_to_array(games[gameID]['game'].fen())
+            sio.emit('update_board',{'game_array':game_array},to=gameID)
+            outcome = games[gameID]['game'].outcome()
         print(outcome)
-        
         if outcome:
             if outcome.winner == chess.WHITE:
                 games[gameID]['chat'] += f'Server:\nwhite won\n\n'
@@ -303,7 +335,6 @@ def check_move(client,data):
                 games[gameID]['chat'] += f'Server:\ndraw\n\n'
             chat = games[gameID]['chat']
             sio.emit('update_chat',{'chat': chat},to=gameID)
-        sio.emit('update_board',{'game_array':game_array},to=gameID)
     else:
         sio.emit('error',{'msg':'invalid move'},to=client)
         print("invalid move")
